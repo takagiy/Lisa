@@ -1,0 +1,163 @@
+#include <lisa/parser.hpp>
+#include <string_theory/format>
+
+using std::vector;
+template<class T>
+using uniq = std::unique_ptr<T>;
+using std::make_unique;
+using ST::string;
+using ST::format;
+using std::size_t;
+using lisa::token;
+using lisa::token_kind;
+
+namespace lisa {
+auto parser::parse(const vector<token> &t) -> uniq<node> {
+  size_t i = 0;
+  return this->parse(t, i);
+}
+
+auto parser::parse(const vector<token> &t, std::size_t &i) -> uniq<node> {
+  if (t[i].kind == token_kind::lpar) {
+    if (i + 1 >= t.size()) {
+      return nullptr;
+    }
+    else if (t[i + 1].kind == token_kind::word && t[i + 1].raw == "def") {
+      return def::parse(t, i);
+    }
+    else if (t[i + 1].kind == token_kind::word || t[i + 1].kind == token_kind::op) {
+      return fn_call::parse(t, i);
+    }
+    else {
+      return nullptr;
+    }
+  }
+  else if (t[i].kind == token_kind::word || t[i].kind == token_kind::op) {
+    return id::parse(t, i);
+  }
+  else if (t[i].kind == token_kind::num) {
+    return num::parse(t, i);
+  }
+  else {
+    return nullptr;
+  }
+}
+
+node::~node() {}
+
+auto node::repr() const -> string {
+  return "<node>";
+}
+
+auto id::repr() const -> string {
+  return format("{{\"kind\":\"id\", \"name\":\"{}\"}}", this->name);
+}
+
+auto num::repr() const -> string {
+  return format("{{\"kind\":\"num\", \"number\":{}}}", this->number);
+}
+
+auto repr_body(const vector<uniq<node>> &body) {
+  string result = "[" + body.front()->repr();
+  for(size_t i = 1; i < body.size(); ++i) {
+    result += ", ";
+    result += body[i]->repr();
+  }
+  result += "]";
+  return result;
+}
+
+auto def::repr() const -> string {
+  return format("{{\"kind\":\"def\", \"fn_name\":{}, \"body\":{}}}",
+      this->fn_name->repr(),
+      repr_body(this->body));
+}
+
+auto fn_call::repr() const -> string {
+  return format("{{\"kind\":\"fn_call\", \"fn_name\":{}, \"args\":{}}}",
+      this->fn_name->repr(),
+      repr_body(this->args));
+}
+
+auto id::parse(const vector<token> &t, size_t &i) -> uniq<id> {
+  return make_unique<id>(t[i].raw);
+}
+
+auto num::parse(const vector<token> &t, size_t &i) -> uniq<num> {
+  return make_unique<num>(t[i].raw.to_double());
+}
+
+auto parse_body(const vector<token> &t, size_t &i)  -> vector<uniq<node>> {
+  vector<uniq<node>> result;
+  parser parser;
+  auto parsed = parser.parse(t, i);
+
+  while(parsed) {
+    result.push_back(std::move(parsed));
+    ++i;
+    parsed = parser.parse(t, i);
+  }
+
+  if (t[i].kind != token_kind::rpar) {
+    return {};
+  }
+
+  return result;
+}
+
+auto fn_call::parse(const vector<token> &t, size_t &i) -> uniq<fn_call> {
+  if (t[i].kind != token_kind::lpar) {
+    return nullptr;
+  }
+  ++i;
+
+  auto fn_name = id::parse(t, i);
+  ++i;
+
+  auto args = parse_body(t, i);
+
+  return make_unique<fn_call>(std::move(fn_name), std::move(args));
+}
+
+auto parse_def_args(const vector<token> &t, size_t &i) -> vector<uniq<id>> {
+  if (t[i].kind != token_kind::lpar) {
+    return {};
+  }
+  ++i;
+  
+  vector<uniq<id>> result;
+
+  while(i < t.size() && t[i].kind == token_kind::word) {
+    result.push_back(id::parse(t, i));
+    ++i;
+  }
+  
+  if (t[i].kind != token_kind::rpar) {
+    return {};
+  }
+
+  return result;
+}
+
+auto def::parse(const vector<token> &t, size_t &i) -> uniq<def> {
+  if (t[i].kind != token_kind::lpar) {
+    return nullptr;
+  }
+  ++i;
+
+  if (t[i].raw != "def") {
+    return nullptr;
+  }
+  ++i;
+
+  auto fn_name = id::parse(t, i);
+  ++i;
+
+  auto args = parse_def_args(t, i);
+  ++i;
+
+  auto body = parse_body(t, i);
+
+  return make_unique<def>(std::move(fn_name), std::move(args), std::move(body));
+}
+}
