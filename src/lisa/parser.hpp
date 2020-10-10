@@ -1,15 +1,19 @@
 #ifndef LISA_PARSER
 #define LISA_PARSER
 #include <lisa/lexer.hpp>
+#include <llvm/IR/Value.h>
 #include <string_theory/string>
 #include <memory>
 #include <vector>
 #include <cstddef>
 
 namespace lisa {
+struct compiler;
+
 struct node {
   virtual ~node();
   virtual auto repr() const -> ST::string;
+  virtual auto gen(compiler &) const -> llvm::Value* = 0;
 };
 
 struct id : node {
@@ -19,6 +23,7 @@ struct id : node {
   id(const ST::string &n, bool i) : name(n), is_op(i) {}
   
   auto repr() const -> ST::string;
+  auto gen(compiler &) const -> llvm::Value*;
 
   static auto parse(const std::vector<token> &, std::size_t &) -> std::unique_ptr<id>;
 };
@@ -29,6 +34,7 @@ struct num : node {
   num(double n) : number(n) {}
 
   auto repr() const -> ST::string;
+  auto gen(compiler &) const -> llvm::Value*;
 
   static auto parse(const std::vector<token> &, std::size_t &) -> std::unique_ptr<num>;
 };
@@ -45,6 +51,7 @@ struct def : node {
   ) : fn_name(std::move(f)), args(std::move(a)), body(std::move(b)) {}
 
   auto repr() const -> ST::string;
+  auto gen(compiler &) const -> llvm::Value*;
 
   static auto parse(const std::vector<token> &, std::size_t &) -> std::unique_ptr<def>;
 };
@@ -59,6 +66,9 @@ struct fn_call : node {
   ) : fn_name(std::move(f)), args(std::move(a)) {}
   
   auto repr() const -> ST::string;
+  auto gen(compiler &) const -> llvm::Value*;
+
+  auto ref_args() const -> std::vector<node *>;
 
   static auto parse(const std::vector<token> &, std::size_t &) -> std::unique_ptr<fn_call>;
 };

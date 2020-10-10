@@ -1,6 +1,10 @@
 #include <lisa/parser.hpp>
 #include <string_theory/format>
+#include <algorithm>
+#include <iterator>
 
+using std::transform;
+using std::back_inserter;
 using std::vector;
 template<class T>
 using uniq = std::unique_ptr<T>;
@@ -79,6 +83,13 @@ auto fn_call::repr() const -> string {
   return format("{{\"kind\":\"fn_call\", \"fn_name\":{}, \"args\":{}}}",
       this->fn_name->repr(),
       repr_body(this->args));
+}
+
+auto fn_call::ref_args() const -> vector<node *> {
+  vector<node *> result;
+  transform(this->args.cbegin(), this->args.cend(), back_inserter(result),
+      [](auto &&p) { return p.get(); });
+  return result;
 }
 
 auto id::parse(const vector<token> &t, size_t &i) -> uniq<id> {
