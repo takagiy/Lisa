@@ -46,6 +46,11 @@ prim_fn prim_mul(2, [](compiler &c, const vector<node *>& args) {
   return c.builder.CreateFMul(lhs, rhs, "primmul");
 });
 
+prim_fn prim_return(1, [](compiler &c, const vector<node *>& args) {
+  Value* ret = args[0]->gen(c);
+  return c.builder.CreateRet(ret);
+});
+
 auto id::gen(compiler &c) const -> Value* {
   return c.var_table[this->name].value;
 }
@@ -107,6 +112,9 @@ auto fn_call::gen(compiler &c) const -> Value* {
     else if (this->fn_name->name == "*") {
       return prim_mul(c, this->ref_args());
     }
+  }
+  else if (this->fn_name->name == "return") {
+    return prim_return(c, this->ref_args());
   }
 
   Function* f = c.module.getFunction(this->fn_name->name.c_str());
