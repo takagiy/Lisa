@@ -27,25 +27,25 @@ auto prim_fn<Fn>::operator()(compiler &c, const std::vector<node *> &v) const ->
   return generator(c, v);
 }
 
-static prim_fn prim_add(&f64, 2, [](compiler &c, const std::vector<node *>& args) {
+inline prim_fn prim_add(&f64, 2, [](compiler &c, const std::vector<node *>& args) {
   auto* lhs = args[0]->gen(c);
   auto* rhs = args[1]->gen(c);
   return c.builder.CreateFAdd(lhs, rhs, "primadd");
 });
 
-static prim_fn prim_sub(&f64, 2, [](compiler &c, const std::vector<node *>& args) {
+inline prim_fn prim_sub(&f64, 2, [](compiler &c, const std::vector<node *>& args) {
   auto* lhs = args[0]->gen(c);
   auto* rhs = args[1]->gen(c);
   return c.builder.CreateFSub(lhs, rhs, "primsub");
 });
 
-static prim_fn prim_mul(&f64, 2, [](compiler &c, const std::vector<node *>& args) {
+inline prim_fn prim_mul(&f64, 2, [](compiler &c, const std::vector<node *>& args) {
   auto* lhs = args[0]->gen(c);
   auto* rhs = args[1]->gen(c);
   return c.builder.CreateFMul(lhs, rhs, "primmul");
 });
 
-static prim_fn prim_return(&f64, 1, [](compiler &c, const std::vector<node *>& args) {
+inline prim_fn prim_return(&f64, 1, [](compiler &c, const std::vector<node *>& args) {
   auto* ret = args[0]->gen(c);
   return c.builder.CreateRet(ret);
 });
