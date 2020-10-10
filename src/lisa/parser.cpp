@@ -68,7 +68,8 @@ auto num::repr() const -> string {
   return format("{{\"kind\":\"num\", \"number\":{}}}", this->number);
 }
 
-auto repr_body(const vector<uniq<node>> &body) -> string {
+template <class T>
+auto repr_body(const vector<uniq<T>> &body) -> string {
   if (body.empty()) {
     return "[]";
   }
@@ -83,8 +84,9 @@ auto repr_body(const vector<uniq<node>> &body) -> string {
 }
 
 auto def::repr() const -> string {
-  return format("{{\"kind\":\"def\", \"fn_name\":{}, \"body\":{}}}",
+  return format("{{\"kind\":\"def\", \"fn_name\":{}, \"args\":{}, \"body\":{}}}",
       this->fn_name->repr(),
+      repr_body(this->args),
       repr_body(this->body));
 }
 
