@@ -135,7 +135,7 @@ auto typed<T>::parse(std::unique_ptr<T>&& raw, const std::vector<token> &t, size
 
 template<class T>
 auto typed<T>::repr() const -> ST::string {
-  return ST::format("{{\"ty_name\":{}, \"raw\":{}}}", this->ty_name->repr(), this->raw->repr());
+  return ST::format("{{\"kind\":\"typed\", \"ty_name\":{}, \"raw\":{}}}", this->ty_name->repr(), this->raw->repr());
 }
 
 template<class T>
