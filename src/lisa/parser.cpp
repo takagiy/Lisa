@@ -70,7 +70,7 @@ auto num::repr() const -> string {
 
 auto repr_body(const vector<uniq<node>> &body) -> string {
   if (body.empty()) {
-    return "";
+    return "[]";
   }
 
   string result = "[" + body.front()->repr();
