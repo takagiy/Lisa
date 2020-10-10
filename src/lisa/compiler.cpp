@@ -1,3 +1,5 @@
+#include <lisa/type_checker.hpp>
+#include <lisa/primitive.hpp>
 #include <lisa/compiler.hpp>
 #include <lisa/parser.hpp>
 #include <llvm/IR/DerivedTypes.h>
@@ -27,29 +29,6 @@ namespace lisa {
 auto compiler::compile(const node &ast) -> void {
   ast.gen(*this);
 }
-
-prim_fn prim_add(2, [](compiler &c, const vector<node *>& args) {
-  Value* lhs = args[0]->gen(c);
-  Value* rhs = args[1]->gen(c);
-  return c.builder.CreateFAdd(lhs, rhs, "primadd");
-});
-
-prim_fn prim_sub(2, [](compiler &c, const vector<node *>& args) {
-  Value* lhs = args[0]->gen(c);
-  Value* rhs = args[1]->gen(c);
-  return c.builder.CreateFSub(lhs, rhs, "primsub");
-});
-
-prim_fn prim_mul(2, [](compiler &c, const vector<node *>& args) {
-  Value* lhs = args[0]->gen(c);
-  Value* rhs = args[1]->gen(c);
-  return c.builder.CreateFMul(lhs, rhs, "primmul");
-});
-
-prim_fn prim_return(1, [](compiler &c, const vector<node *>& args) {
-  Value* ret = args[0]->gen(c);
-  return c.builder.CreateRet(ret);
-});
 
 auto id::gen(compiler &c) const -> Value* {
   return c.var_table[this->name].value;

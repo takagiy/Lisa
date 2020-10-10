@@ -9,11 +9,15 @@
 
 namespace lisa {
 struct compiler;
+struct type_checker;
+struct type;
+using type_t = type;
 
 struct node {
   virtual ~node();
   virtual auto repr() const -> ST::string;
   virtual auto gen(compiler &) const -> llvm::Value* = 0;
+  virtual auto type(type_checker &) const -> type_t* = 0;
 };
 
 struct id : node {
@@ -24,6 +28,7 @@ struct id : node {
   
   auto repr() const -> ST::string;
   auto gen(compiler &) const -> llvm::Value*;
+  auto type(type_checker &) const -> type_t*;
 
   static auto parse(const std::vector<token> &, std::size_t &) -> std::unique_ptr<id>;
 };
@@ -35,6 +40,7 @@ struct num : node {
 
   auto repr() const -> ST::string;
   auto gen(compiler &) const -> llvm::Value*;
+  auto type(type_checker &) const -> type_t*;
 
   static auto parse(const std::vector<token> &, std::size_t &) -> std::unique_ptr<num>;
 };
@@ -52,6 +58,7 @@ struct def : node {
 
   auto repr() const -> ST::string;
   auto gen(compiler &) const -> llvm::Value*;
+  auto type(type_checker &) const -> type_t*;
 
   static auto parse(const std::vector<token> &, std::size_t &) -> std::unique_ptr<def>;
 };
@@ -67,6 +74,7 @@ struct fn_call : node {
   
   auto repr() const -> ST::string;
   auto gen(compiler &) const -> llvm::Value*;
+  auto type(type_checker &) const -> type_t*;
 
   auto ref_args() const -> std::vector<node *>;
 
@@ -82,6 +90,7 @@ struct progn : node {
 
   auto repr() const -> ST::string;
   auto gen(compiler &) const -> llvm::Value*;
+  auto type(type_checker &) const -> type_t*;
 };
 
 struct parser {

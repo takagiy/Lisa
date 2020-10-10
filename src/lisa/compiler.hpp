@@ -26,24 +26,6 @@ struct compiler {
 
   auto compile(const node &) -> void;
 };
-
-template <class Fn>
-struct prim_fn {
-  std::size_t argc;
-  Fn generator;
-
-  auto operator()(compiler &, const std::vector<node *> &) const -> llvm::Value*;
-};
-}
-
-namespace lisa {
-template<class Fn>
-auto prim_fn<Fn>::operator()(compiler &c, const std::vector<node *> &v) const -> llvm::Value* {
-  if (v.size() != this->argc) {
-    return nullptr;
-  }
-  return generator(c, v);
-}
 }
 
 #endif

@@ -17,6 +17,7 @@ target_include_directories(liblisa PUBLIC src)
 target_sources(liblisa PRIVATE
   src/lisa/lexer.cpp
   src/lisa/parser.cpp
+  src/lisa/type_checker.cpp
   src/lisa/compiler.cpp
   src/lisa/file.cpp)
 target_link_libraries(liblisa PUBLIC
