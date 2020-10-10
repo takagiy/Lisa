@@ -7,11 +7,11 @@
 
 namespace lisa {
 struct node;
-
 struct type {
   ST::string name;
 
-  type(const ST::string n) : name(n) {}
+  type(const ST::string&);
+  static auto of_str(const ST::string &) -> const type*;
 
   type(const type&) = delete;
   type(type&&) = delete;
@@ -19,8 +19,10 @@ struct type {
   type& operator=(type&&) = delete;
 };
 
-static type f64("f64");
-static type statement("statement");
+
+inline std::unordered_map<ST::string, const type*> typename_map;
+inline type f64("f64");
+inline type statement("statement");
 
 struct fn_type {
   type* ret;

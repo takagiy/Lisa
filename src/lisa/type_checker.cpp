@@ -5,8 +5,16 @@
 
 using type_t = lisa::type;
 using std::vector;
+using ST::string;
 
 namespace lisa {
+type::type(const string &n) : name(n) {
+  typename_map[n] = this;
+}
+auto type::of_str(const string &name) -> const type* {
+  return typename_map[name];
+}
+
 auto type_checker::type_check(const node &ast) -> void {
   ast.type(*this);
 }
