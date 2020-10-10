@@ -24,7 +24,7 @@ struct compiler {
 
   compiler() : context(), builder(context), module("mod", context), var_table() {}
 
-  auto compile(const node &) -> llvm::Value*;
+  auto compile(const node &) -> void;
 };
 
 template <class Fn>

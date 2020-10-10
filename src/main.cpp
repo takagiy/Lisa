@@ -21,9 +21,10 @@ auto main(int argc, const char* argv[]) -> int {
   auto ast = parser.parse(tokens);
   fmt::print("{}\n", ast->repr().view());
   auto compiler = lisa::compiler();
-  auto ir = compiler.compile(*ast);
-  std::string buf;
-  llvm::raw_string_ostream ss(buf);
-  ir->print(ss);
-  fmt::print("{}\n", ss.str());
+  compiler.compile(*ast);
+  std::string ir;
+  llvm::raw_string_ostream ss(ir);
+  ss << compiler.module;
+  ss.flush();
+  fmt::print("{}\n", ir);
 }

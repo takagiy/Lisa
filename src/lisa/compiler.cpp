@@ -24,8 +24,8 @@ using std::vector;
 using std::size_t;
 
 namespace lisa {
-auto compiler::compile(const node &ast) -> Value* {
-  return ast.gen(*this);
+auto compiler::compile(const node &ast) -> void {
+  ast.gen(*this);
 }
 
 prim_fn prim_add(2, [](compiler &c, const vector<node *>& args) {
