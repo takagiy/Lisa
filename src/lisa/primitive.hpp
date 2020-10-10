@@ -45,7 +45,7 @@ inline prim_fn prim_mul(&f64, 2, [](compiler &c, const std::vector<node *>& args
   return c.builder.CreateFMul(lhs, rhs, "primmul");
 });
 
-inline prim_fn prim_return(&f64, 1, [](compiler &c, const std::vector<node *>& args) {
+inline prim_fn prim_return(&statement, 1, [](compiler &c, const std::vector<node *>& args) {
   auto* ret = args[0]->gen(c);
   return c.builder.CreateRet(ret);
 });
