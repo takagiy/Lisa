@@ -4,4 +4,4 @@
   (* (* r r) (pi)))
 
 (def main ()
-  (return (circle-area 5)))
+  (circle-area 5))
