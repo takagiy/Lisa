@@ -14,7 +14,7 @@ target_include_directories(ext_llvm INTERFACE ${LLVM_INCLUDE_DIRS})
 add_library(liblisa)
 target_compile_features(liblisa PUBLIC cxx_std_20)
 target_include_directories(liblisa PUBLIC src)
-target_sources(liblisa PUBLIC
+target_sources(liblisa PRIVATE
   src/lisa/lexer.cpp
   src/lisa/parser.cpp
   src/lisa/compiler.cpp
