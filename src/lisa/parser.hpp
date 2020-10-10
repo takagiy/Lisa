@@ -14,8 +14,9 @@ struct node {
 
 struct id : node {
   ST::string name;
+  bool is_op;
   
-  id(const ST::string &n) : name(n) {}
+  id(const ST::string &n, bool i) : name(n), is_op(i) {}
   
   auto repr() const -> ST::string;
 

@@ -50,7 +50,9 @@ auto node::repr() const -> string {
 }
 
 auto id::repr() const -> string {
-  return format("{{\"kind\":\"id\", \"name\":\"{}\"}}", this->name);
+  return format("{{\"kind\":\"id\", \"name\":\"{}\", \"is_op\": {}}}",
+      this->name,
+      this->is_op);
 }
 
 auto num::repr() const -> string {
@@ -80,7 +82,7 @@ auto fn_call::repr() const -> string {
 }
 
 auto id::parse(const vector<token> &t, size_t &i) -> uniq<id> {
-  return make_unique<id>(t[i].raw);
+  return make_unique<id>(t[i].raw, t[i].kind == token_kind::op);
 }
 
 auto num::parse(const vector<token> &t, size_t &i) -> uniq<num> {
