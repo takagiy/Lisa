@@ -1,6 +1,8 @@
 #ifndef LISA_TYPE_CHECKER
 #define LISA_TYPE_CHECKER
 
+#include <llvm/IR/LLVMContext.h>
+#include <llvm/IR/Type.h>
 #include <string_theory/string>
 #include <unordered_map>
 #include <vector>
@@ -8,10 +10,13 @@
 namespace lisa {
 struct node;
 struct type {
-  ST::string name;
+  using raw_fn_t = llvm::Type* (llvm::LLVMContext &);
 
-  type(const ST::string&);
-  static auto of_str(const ST::string &) -> const type*;
+  ST::string name;
+  raw_fn_t* raw;
+
+  type(const ST::string&, raw_fn_t*);
+  static auto of_str(const ST::string &) -> type*;
 
   type(const type&) = delete;
   type(type&&) = delete;
@@ -20,9 +25,9 @@ struct type {
 };
 
 
-inline std::unordered_map<ST::string, const type*> typename_map;
-inline type f64("f64");
-inline type statement("statement");
+inline std::unordered_map<ST::string, type*> typename_map;
+inline type f64("f64", &llvm::Type::getDoubleTy);
+inline type statement("statement", &llvm::Type::getVoidTy);
 
 struct fn_type {
   type* ret;
