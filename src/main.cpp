@@ -1,9 +1,14 @@
 #include <fmt/format.h>
 #include <lisa/lexer.hpp>
 #include <lisa/parser.hpp>
+#include <lisa/file.hpp>
 
-auto main() -> int {
-  auto code = "(def circle-area (r) (* (* r r) 3.14))";
+auto main(int argc, const char* argv[]) -> int {
+  if (argc <= 1) {
+    fmt::print("error: no input files\n");
+    return -1;
+  }
+  auto code = lisa::read_file(argv[1]);
   auto lexer = lisa::lexer();
   auto tokens = lexer.tokenize(code);
   for(auto &&token: tokens) {

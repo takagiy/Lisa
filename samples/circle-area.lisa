@@ -1,0 +1,2 @@
+(def circle-area (r)
+  (* (* r r) 3.14))
