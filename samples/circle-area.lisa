@@ -1,2 +1,7 @@
+(def pi () 3.14)
+
 (def circle-area (r)
-  (* (* r r) 3.14))
+  (* (* r r) (pi)))
+
+(def main ()
+  (return (circle-area 5)))

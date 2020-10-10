@@ -92,11 +92,16 @@ auto def::gen(compiler &c) const -> Value* {
     c.var_table[a.getName().data()] = variable{&a};
   }
 
-  for(size_t i = 0; i < this->body.size() - 1; ++i) {
-    this->body[i]->gen(c);
+  if (body.empty()) {
+    c.builder.CreateRetVoid();
   }
-  auto* ret = this->body.back()->gen(c);
-  c.builder.CreateRet(ret);
+  else {
+    for(size_t i = 0; i < this->body.size() - 1; ++i) {
+      this->body[i]->gen(c);
+    }
+    auto* ret = this->body.back()->gen(c);
+    c.builder.CreateRet(ret);
+  }
 
   return f;
 }
@@ -124,5 +129,12 @@ auto fn_call::gen(compiler &c) const -> Value* {
       [&](auto &&a) { return a->gen(c); });
 
   return c.builder.CreateCall(f, args, "fncall");
+}
+
+auto progn::gen(compiler &c) const -> Value* {
+  for(auto && ch : this->children) {
+    ch->gen(c);
+  }
+  return nullptr;
 }
 }

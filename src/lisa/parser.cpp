@@ -17,8 +17,13 @@ using lisa::token_kind;
 
 namespace lisa {
 auto parser::parse(const vector<token> &t) -> uniq<node> {
+  vector<uniq<node>> result;
   size_t i = 0;
-  return this->parse(t, i);
+  while(i < t.size()) {
+    result.push_back(this->parse(t, i));
+    ++i;
+  }
+  return make_unique<progn>(std::move(result));
 }
 
 auto parser::parse(const vector<token> &t, std::size_t &i) -> uniq<node> {
@@ -63,7 +68,11 @@ auto num::repr() const -> string {
   return format("{{\"kind\":\"num\", \"number\":{}}}", this->number);
 }
 
-auto repr_body(const vector<uniq<node>> &body) {
+auto repr_body(const vector<uniq<node>> &body) -> string {
+  if (body.empty()) {
+    return "";
+  }
+
   string result = "[" + body.front()->repr();
   for(size_t i = 1; i < body.size(); ++i) {
     result += ", ";
@@ -85,12 +94,17 @@ auto fn_call::repr() const -> string {
       repr_body(this->args));
 }
 
+auto progn::repr() const -> string {
+  return repr_body(this->children);
+}
+
 auto fn_call::ref_args() const -> vector<node *> {
   vector<node *> result;
   transform(this->args.cbegin(), this->args.cend(), back_inserter(result),
       [](auto &&p) { return p.get(); });
   return result;
 }
+
 
 auto id::parse(const vector<token> &t, size_t &i) -> uniq<id> {
   return make_unique<id>(t[i].raw, t[i].kind == token_kind::op);

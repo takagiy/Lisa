@@ -61,8 +61,8 @@ struct fn_call : node {
   std::vector<std::unique_ptr<node>> args;
 
   fn_call(
-      std::unique_ptr<id> f,
-      std::vector<std::unique_ptr<node>> a
+      std::unique_ptr<id> &&f,
+      std::vector<std::unique_ptr<node>> &&a
   ) : fn_name(std::move(f)), args(std::move(a)) {}
   
   auto repr() const -> ST::string;
@@ -71,6 +71,17 @@ struct fn_call : node {
   auto ref_args() const -> std::vector<node *>;
 
   static auto parse(const std::vector<token> &, std::size_t &) -> std::unique_ptr<fn_call>;
+};
+
+struct progn : node {
+  std::vector<std::unique_ptr<node>> children;
+
+  progn(
+      std::vector<std::unique_ptr<node>> &&c
+  ) : children(std::move(c)) {}
+
+  auto repr() const -> ST::string;
+  auto gen(compiler &) const -> llvm::Value*;
 };
 
 struct parser {
