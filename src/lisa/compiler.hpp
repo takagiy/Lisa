@@ -12,6 +12,8 @@
 #include <cstdlib>
 
 namespace lisa {
+struct fn_type;
+
 struct variable {
   llvm::Value* value;
 };
@@ -24,6 +26,7 @@ struct compiler {
 
   compiler() : context(), builder(context), module("mod", context), var_table() {}
 
+  auto compile(const std::unordered_map<ST::string, fn_type>&) -> void;
   auto compile(const node &) -> void;
 };
 }

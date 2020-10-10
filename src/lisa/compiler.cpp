@@ -20,12 +20,34 @@ using llvm::Function;
 using llvm::APFloat;
 using llvm::Value;
 using llvm::Type;
+using std::unordered_map;
 using std::back_inserter;
 using std::transform;
 using std::vector;
 using std::size_t;
+using ST::string;
 
 namespace lisa {
+auto gen_fn_decl(compiler& c, const string& name, const fn_type& type) {
+  vector<Type *> args_t;
+  transform(type.args.cbegin(), type.args.cend(), back_inserter(args_t),
+      [&](auto &&t) { return t->raw(c.context); });
+  auto* ret_t = type.ret->raw(c.context);
+  auto* fn_t = FunctionType::get(ret_t, args_t, false);
+  auto* fn = Function::Create(
+    fn_t,
+    Function::ExternalLinkage,
+    name.c_str(),
+    c.module
+  );
+}
+
+auto compiler::compile(const unordered_map<string, fn_type> &fn_table) -> void {
+  for(auto&& [name, type]: fn_table) {
+    gen_fn_decl(*this, name, type);
+  }
+}
+
 auto compiler::compile(const node &ast) -> void {
   ast.gen(*this);
 }
@@ -38,27 +60,13 @@ auto num::gen(compiler &c) const -> Value* {
   return ConstantFP::get(c.context, APFloat(this->number));
 }
 
-auto get_fn(compiler &c, const def & fn_def) {
-  if(Function* f = c.module.getFunction(fn_def.fn_name->name.c_str()); f) {
+auto get_fn(compiler &c, const def & fn_def) -> Function* {
+  if(auto* f = c.module.getFunction(fn_def.fn_name->name.c_str()); f) {
     return f;
   }
-
-  vector<Type *> arg_types(fn_def.args.size(), Type::getDoubleTy(c.context));
-  FunctionType* fn_type = FunctionType::get(Type::getDoubleTy(c.context), arg_types, false);
-
-  Function* f = Function::Create(
-      fn_type,
-      Function::ExternalLinkage,
-      fn_def.fn_name->name.c_str(),
-      c.module);
-
-  size_t i = 0;
-  for(auto && a : f->args()) {
-    a.setName(fn_def.args[i]->raw->name.c_str());
-    ++i;
+  else {
+    return nullptr;
   }
-
-  return f;
 }
 
 auto def::gen(compiler &c) const -> Value* {
@@ -67,8 +75,10 @@ auto def::gen(compiler &c) const -> Value* {
   c.builder.SetInsertPoint(block);
 
   c.var_table.clear();
+  size_t i = 0;
   for(auto && a : f->args()) {
-    c.var_table[a.getName().data()] = variable{&a};
+    c.var_table[this->args[i]->raw->name] = variable{&a};
+    ++i;
   }
 
   if (body.empty()) {

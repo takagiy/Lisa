@@ -39,6 +39,7 @@ auto main(int argc, const char* argv[]) -> int {
   }
 
   auto compiler = lisa::compiler();
+  compiler.compile(type_checker.fn_table);
   compiler.compile(*ast);
 
   std::string ir;
