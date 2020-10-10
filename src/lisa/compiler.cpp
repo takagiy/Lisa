@@ -54,7 +54,7 @@ auto get_fn(compiler &c, const def & fn_def) {
 
   size_t i = 0;
   for(auto && a : f->args()) {
-    a.setName(fn_def.args[i]->name.c_str());
+    a.setName(fn_def.args[i]->raw->name.c_str());
     ++i;
   }
 

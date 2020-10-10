@@ -22,7 +22,7 @@ auto num::type(type_checker &t) const -> type_t* {
 auto def::type(type_checker &t) const -> type_t* {
   t.var_table.clear();
   for (auto &&a : this->args) {
-    t.var_table[a->name] = &f64;
+    t.var_table[a->raw->name] = &f64;
   }
 
   auto arg_t = vector<type_t *>(this->args.size(), &f64);

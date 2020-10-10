@@ -146,16 +146,18 @@ auto fn_call::parse(const vector<token> &t, size_t &i) -> uniq<fn_call> {
   return make_unique<fn_call>(std::move(fn_name), std::move(args));
 }
 
-auto parse_def_args(const vector<token> &t, size_t &i) -> vector<uniq<id>> {
+auto parse_def_args(const vector<token> &t, size_t &i) -> vector<uniq<typed<id>>> {
   if (t[i].kind != token_kind::lpar) {
     return {};
   }
   ++i;
   
-  vector<uniq<id>> result;
+  vector<uniq<typed<id>>> result;
 
   while(i < t.size() && t[i].kind == token_kind::word) {
-    result.push_back(id::parse(t, i));
+    auto arg_name = id::parse(t, i);
+    ++i;
+    result.push_back(typed<id>::parse(std::move(arg_name), t, i));
     ++i;
   }
   

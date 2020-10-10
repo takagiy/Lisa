@@ -19,6 +19,8 @@ auto str_of(token_kind kind) -> string {
       return "word";
     case token_kind::num:
       return "num";
+    case token_kind::tysep:
+      return "tysep";
     case token_kind::op:
       return "op";
     default:
@@ -88,6 +90,12 @@ auto read_tokens_(vector<token> &result, const string& s) {
             read
         });
       }
+    }
+    else if(s[i] == '\'') {
+      result.push_back(token{
+          token_kind::tysep,
+          str_of_char(s[i])
+      });
     }
     // operator
     else if(ispunct(s[i])) {

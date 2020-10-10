@@ -1,6 +1,6 @@
 (def pi () 3.14)
 
-(def circle-area (r)
+(def circle-area (r 'f64)
   (* (* r r) (pi)))
 
 (def main ()
