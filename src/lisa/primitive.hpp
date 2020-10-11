@@ -8,6 +8,7 @@
 
 namespace lisa {
 struct type;
+extern type i32;
 extern type f64;
 extern type statement;
 
@@ -24,6 +25,24 @@ struct prim_fn {
 };
 
 inline std::unordered_map<ST::string, prim_fn*> prim_fn_map;
+
+inline prim_fn prim_iadd("__iadd", &i32, 2, [](compiler &c, const std::vector<node *>& args) -> llvm::Value* {
+  auto* lhs = args[0]->gen(c);
+  auto* rhs = args[1]->gen(c);
+  return c.builder.CreateAdd(lhs, rhs, "primadd");
+});
+
+inline prim_fn prim_isub("__isub", &i32, 2, [](compiler &c, const std::vector<node *>& args) -> llvm::Value* {
+  auto* lhs = args[0]->gen(c);
+  auto* rhs = args[1]->gen(c);
+  return c.builder.CreateSub(lhs, rhs, "primsub");
+});
+
+inline prim_fn prim_imul("__imul", &i32, 2, [](compiler &c, const std::vector<node *>& args) -> llvm::Value* {
+  auto* lhs = args[0]->gen(c);
+  auto* rhs = args[1]->gen(c);
+  return c.builder.CreateMul(lhs, rhs, "primmul");
+});
 
 inline prim_fn prim_fadd("__fadd", &f64, 2, [](compiler &c, const std::vector<node *>& args) -> llvm::Value* {
   auto* lhs = args[0]->gen(c);

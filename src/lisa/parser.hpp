@@ -33,16 +33,28 @@ struct id : node {
   static auto parse(const std::vector<token> &, std::size_t &) -> std::unique_ptr<id>;
 };
 
-struct num : node {
-  double number;
+struct inum : node {
+  unsigned long long number;
   
-  num(double n) : number(n) {}
+  inum(unsigned long long n) : number(n) {}
 
   auto repr() const -> ST::string;
   auto gen(compiler &) const -> llvm::Value*;
   auto type(type_checker &) -> type_t*;
 
-  static auto parse(const std::vector<token> &, std::size_t &) -> std::unique_ptr<num>;
+  static auto parse(const std::vector<token> &, std::size_t &) -> std::unique_ptr<inum>;
+};
+
+struct fnum : node {
+  double number;
+  
+  fnum(double n) : number(n) {}
+
+  auto repr() const -> ST::string;
+  auto gen(compiler &) const -> llvm::Value*;
+  auto type(type_checker &) -> type_t*;
+
+  static auto parse(const std::vector<token> &, std::size_t &) -> std::unique_ptr<fnum>;
 };
 
 template<class T>

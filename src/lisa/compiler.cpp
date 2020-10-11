@@ -8,16 +8,19 @@
 #include <llvm/IR/Function.h>
 #include <llvm/IR/Type.h>
 #include <llvm/ADT/APFloat.h>
+#include <llvm/ADT/APInt.h>
 #include <algorithm>
 #include <iterator>
 
 using lisa::token_kind;
 using lisa::compiler;
 using llvm::FunctionType;
+using llvm::ConstantInt;
 using llvm::BasicBlock;
 using llvm::ConstantFP;
 using llvm::Function;
 using llvm::APFloat;
+using llvm::APInt;
 using llvm::Value;
 using llvm::Type;
 using std::unordered_map;
@@ -56,7 +59,11 @@ auto id::gen(compiler &c) const -> Value* {
   return c.var_table[this->name].value;
 }
 
-auto num::gen(compiler &c) const -> Value* {
+auto inum::gen(compiler &c) const -> Value* {
+  return ConstantInt::get(c.context, APInt(32, this->number));
+}
+
+auto fnum::gen(compiler &c) const -> Value* {
   return ConstantFP::get(c.context, APFloat(this->number));
 }
 

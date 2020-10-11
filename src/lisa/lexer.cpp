@@ -17,8 +17,10 @@ auto str_of(token_kind kind) -> string {
       return "rpar";
     case token_kind::word:
       return "word";
-    case token_kind::num:
-      return "num";
+    case token_kind::inum:
+      return "inum";
+    case token_kind::fnum:
+      return "fnum";
     case token_kind::tysep:
       return "tysep";
     case token_kind::op:
@@ -71,12 +73,14 @@ auto read_tokens_(vector<token> &result, const string& s) {
         read += s[i];
       }
 
+      // integer
       if (i + 1 >= s.size() || s[i + 1] != '.') {
         result.push_back(token{
-            token_kind::num,
+            token_kind::inum,
             read
         });
       }
+      // floating point
       else {
         ++i;
         read += s[i];
@@ -86,7 +90,7 @@ auto read_tokens_(vector<token> &result, const string& s) {
         }
 
         result.push_back(token{
-            token_kind::num,
+            token_kind::fnum,
             read
         });
       }

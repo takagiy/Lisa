@@ -14,7 +14,7 @@ using std::pair;
 using ST::string;
 
 namespace lisa {
-type::type(const string &n, type::raw_fn_t* r) : name(n), raw(r) {
+type::type(const string &n, type::raw_t* r) : name(n), raw(r) {
   typename_map[n] = this;
 }
 auto type::of_str(const string &name) -> type* {
@@ -29,7 +29,11 @@ auto id::type(type_checker &t) -> type_t* {
   return t.var_table[this->name];
 }
 
-auto num::type(type_checker &t) -> type_t* {
+auto inum::type(type_checker &t) -> type_t* {
+  return &i32;
+}
+
+auto fnum::type(type_checker &t) -> type_t* {
   return &f64;
 }
 
@@ -60,7 +64,13 @@ auto fn_call::type(type_checker &t) -> type_t* {
     a->type(t);
   }
   if (this->fn_name->is_op) {
-    for (auto &&[op, name] : {pair{"+", "__fadd"}, {"-", "__fsub"}, {"*", "__fmul"}}) {
+    for (auto &&[op, name] : {pair{"+",  "__iadd"},
+                                  {"-",  "__isub"},
+                                  {"*",  "__imul"},
+                                  {"+.", "__fadd"},
+                                  {"-.", "__fsub"},
+                                  {"*.", "__fmul"}}
+    ) {
       if (this->fn_name->name == op) {
         this->fn_name->name = name;
         break;

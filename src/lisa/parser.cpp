@@ -44,8 +44,11 @@ auto parser::parse(const vector<token> &t, std::size_t &i) -> uniq<node> {
   else if (t[i].kind == token_kind::word || t[i].kind == token_kind::op) {
     return id::parse(t, i);
   }
-  else if (t[i].kind == token_kind::num) {
-    return num::parse(t, i);
+  else if (t[i].kind == token_kind::inum) {
+    return inum::parse(t, i);
+  }
+  else if (t[i].kind == token_kind::fnum) {
+    return fnum::parse(t, i);
   }
   else {
     return nullptr;
@@ -64,8 +67,12 @@ auto id::repr() const -> string {
       this->is_op);
 }
 
-auto num::repr() const -> string {
-  return format("{{\"kind\":\"num\", \"number\":{}}}", this->number);
+auto inum::repr() const -> string {
+  return format("{{\"kind\":\"inum\", \"number\":{}}}", this->number);
+}
+
+auto fnum::repr() const -> string {
+  return format("{{\"kind\":\"fnum\", \"number\":{}}}", this->number);
 }
 
 template <class T>
@@ -112,8 +119,12 @@ auto id::parse(const vector<token> &t, size_t &i) -> uniq<id> {
   return make_unique<id>(t[i].raw, t[i].kind == token_kind::op);
 }
 
-auto num::parse(const vector<token> &t, size_t &i) -> uniq<num> {
-  return make_unique<num>(t[i].raw.to_double());
+auto inum::parse(const vector<token> &t, size_t &i) -> uniq<inum> {
+  return make_unique<inum>(t[i].raw.to_ulong_long());
+}
+
+auto fnum::parse(const vector<token> &t, size_t &i) -> uniq<fnum> {
+  return make_unique<fnum>(t[i].raw.to_double());
 }
 
 auto parse_body(const vector<token> &t, size_t &i)  -> vector<uniq<node>> {
