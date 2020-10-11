@@ -19,6 +19,7 @@ target_sources(liblisa PRIVATE
   src/lisa/parser.cpp
   src/lisa/type_checker.cpp
   src/lisa/compiler.cpp
+  src/lisa/primitive.cpp
   src/lisa/file.cpp)
 target_link_libraries(liblisa PUBLIC
   string_theory

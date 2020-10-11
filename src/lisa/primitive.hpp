@@ -3,49 +3,47 @@
 #include <lisa/compiler.hpp>
 #include <lisa/parser.hpp>
 #include <llvm/IR/Value.h>
+#include <unordered_map>
 #include <vector>
 
 namespace lisa {
 struct type;
+extern type f64;
+extern type statement;
 
-template <class Fn>
 struct prim_fn {
+  using raw_t = llvm::Value* (compiler&, const std::vector<node *>&);
   type* ret_type;
   std::size_t argc;
-  Fn generator;
+  raw_t* generator;
 
+  prim_fn(const ST::string &, type*, std::size_t, raw_t*);
   auto operator()(compiler &, const std::vector<node *> &) const -> llvm::Value*;
+
+  static auto find(const ST::string &) -> prim_fn*;
 };
-}
 
-namespace lisa {
-template<class Fn>
-auto prim_fn<Fn>::operator()(compiler &c, const std::vector<node *> &v) const -> llvm::Value* {
-  if (v.size() != this->argc) {
-    return nullptr;
-  }
-  return generator(c, v);
-}
+inline std::unordered_map<ST::string, prim_fn*> prim_fn_map;
 
-inline prim_fn prim_add(&f64, 2, [](compiler &c, const std::vector<node *>& args) {
+inline prim_fn prim_fadd("+", &f64, 2, [](compiler &c, const std::vector<node *>& args) -> llvm::Value* {
   auto* lhs = args[0]->gen(c);
   auto* rhs = args[1]->gen(c);
   return c.builder.CreateFAdd(lhs, rhs, "primadd");
 });
 
-inline prim_fn prim_sub(&f64, 2, [](compiler &c, const std::vector<node *>& args) {
+inline prim_fn prim_fsub("-", &f64, 2, [](compiler &c, const std::vector<node *>& args) -> llvm::Value* {
   auto* lhs = args[0]->gen(c);
   auto* rhs = args[1]->gen(c);
   return c.builder.CreateFSub(lhs, rhs, "primsub");
 });
 
-inline prim_fn prim_mul(&f64, 2, [](compiler &c, const std::vector<node *>& args) {
+inline prim_fn prim_fmul("*", &f64, 2, [](compiler &c, const std::vector<node *>& args) -> llvm::Value* {
   auto* lhs = args[0]->gen(c);
   auto* rhs = args[1]->gen(c);
   return c.builder.CreateFMul(lhs, rhs, "primmul");
 });
 
-inline prim_fn prim_return(&statement, 1, [](compiler &c, const std::vector<node *>& args) {
+inline prim_fn prim_return("return", &statement, 1, [](compiler &c, const std::vector<node *>& args) -> llvm::Value* {
   auto* ret = args[0]->gen(c);
   return c.builder.CreateRet(ret);
 });

@@ -50,19 +50,8 @@ auto def::type(type_checker &t) const -> type_t* {
 }
 
 auto fn_call::type(type_checker &t) const -> type_t* {
-  if (this->fn_name->is_op) {
-    if (this->fn_name->name == "+") {
-      return prim_add.ret_type;
-    }
-    else if (this->fn_name->name == "-") {
-      return prim_sub.ret_type;
-    }
-    else if (this->fn_name->name == "*") {
-      return prim_mul.ret_type;
-    }
-  }
-  else if (this->fn_name->name == "return") {
-    return prim_return.ret_type;
+  if (auto found = prim_fn::find(this->fn_name->name); found) {
+    return found->ret_type;
   }
   return t.fn_table[this->fn_name->name].ret;
 }

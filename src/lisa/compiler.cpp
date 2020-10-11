@@ -96,19 +96,8 @@ auto def::gen(compiler &c) const -> Value* {
 }
 
 auto fn_call::gen(compiler &c) const -> Value* {
-  if (this->fn_name->is_op) {
-    if (this->fn_name->name == "+") {
-      return prim_add(c, this->ref_args());
-    }
-    else if (this->fn_name->name == "-") {
-      return prim_sub(c, this->ref_args());
-    }
-    else if (this->fn_name->name == "*") {
-      return prim_mul(c, this->ref_args());
-    }
-  }
-  else if (this->fn_name->name == "return") {
-    return prim_return(c, this->ref_args());
+  if (auto prim = prim_fn::find(this->fn_name->name); prim) {
+    return (*prim)(c, this->ref_args());
   }
 
   Function* f = c.module.getFunction(this->fn_name->name.c_str());
