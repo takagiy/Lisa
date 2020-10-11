@@ -19,27 +19,31 @@ auto type::of_str(const string &name) -> type* {
   return typename_map[name];
 }
 
-auto type_checker::type_check(const node &ast) -> void {
+auto type_checker::type_check(node &ast) -> void {
   ast.type(*this);
 }
 
-auto id::type(type_checker &t) const -> type_t* {
+auto id::type(type_checker &t) -> type_t* {
   return t.var_table[this->name];
 }
 
-auto num::type(type_checker &t) const -> type_t* {
+auto num::type(type_checker &t) -> type_t* {
   return &f64;
 }
 
-auto def::type(type_checker &t) const -> type_t* {
+auto def::type(type_checker &t) -> type_t* {
+  vector<type_t*> arg_t;
   t.var_table.clear();
+
   for (auto &&a : this->args) {
-    t.var_table[a->raw->name] = &f64;
+    auto* at = type_t::of_str(a->ty_name->name);
+    t.var_table[a->raw->name] = at;
+    arg_t.push_back(at);
+  }
+  for (auto &&b : this->body) {
+    b->type(t);
   }
 
-  vector<type_t*> arg_t;
-  transform(this->args.cbegin(), this->args.cend(), back_inserter(arg_t),
-      [](auto &&a) { return type_t::of_str(a->ty_name->name); });
   auto ret_t = this->body.empty() ? &statement : this->body.back()->type(t);
   auto fn_t = fn_type {
     ret_t,
@@ -49,14 +53,28 @@ auto def::type(type_checker &t) const -> type_t* {
   return &statement;
 }
 
-auto fn_call::type(type_checker &t) const -> type_t* {
+auto fn_call::type(type_checker &t) -> type_t* {
+  for (auto &&a : this->args) {
+    a->type(t);
+  }
+  if (this->fn_name->is_op) {
+    if (this->fn_name->name == "+") {
+      this->fn_name->name = "__fadd";
+    }
+    else if (this->fn_name->name == "-") {
+      this->fn_name->name = "__fsub";
+    }
+    else if (this->fn_name->name == "*") {
+      this->fn_name->name = "__fmul";
+    }
+  }
   if (auto found = prim_fn::find(this->fn_name->name); found) {
     return found->ret_type;
   }
   return t.fn_table[this->fn_name->name].ret;
 }
 
-auto progn::type(type_checker &t) const -> type_t* {
+auto progn::type(type_checker &t) -> type_t* {
   for (auto &&c : this->children) {
     c->type(t);
   }

@@ -39,7 +39,7 @@ struct type_checker {
   std::unordered_map<ST::string, type*> var_table;
   type_checker() : fn_table(), var_table() {}
 
-  auto type_check(const node &) -> void;
+  auto type_check(node &) -> void;
 };
 }
 

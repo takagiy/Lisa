@@ -25,19 +25,19 @@ struct prim_fn {
 
 inline std::unordered_map<ST::string, prim_fn*> prim_fn_map;
 
-inline prim_fn prim_fadd("+", &f64, 2, [](compiler &c, const std::vector<node *>& args) -> llvm::Value* {
+inline prim_fn prim_fadd("__fadd", &f64, 2, [](compiler &c, const std::vector<node *>& args) -> llvm::Value* {
   auto* lhs = args[0]->gen(c);
   auto* rhs = args[1]->gen(c);
   return c.builder.CreateFAdd(lhs, rhs, "primadd");
 });
 
-inline prim_fn prim_fsub("-", &f64, 2, [](compiler &c, const std::vector<node *>& args) -> llvm::Value* {
+inline prim_fn prim_fsub("__fsub", &f64, 2, [](compiler &c, const std::vector<node *>& args) -> llvm::Value* {
   auto* lhs = args[0]->gen(c);
   auto* rhs = args[1]->gen(c);
   return c.builder.CreateFSub(lhs, rhs, "primsub");
 });
 
-inline prim_fn prim_fmul("*", &f64, 2, [](compiler &c, const std::vector<node *>& args) -> llvm::Value* {
+inline prim_fn prim_fmul("__fmul", &f64, 2, [](compiler &c, const std::vector<node *>& args) -> llvm::Value* {
   auto* lhs = args[0]->gen(c);
   auto* rhs = args[1]->gen(c);
   return c.builder.CreateFMul(lhs, rhs, "primmul");

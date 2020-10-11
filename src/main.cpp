@@ -38,6 +38,7 @@ auto main(int argc, const char* argv[]) -> int {
     fmt::print(" ) -> {}\n", type.ret->name.view());
   }
 
+  fmt::print("{}\n", ast->repr().view());
   auto compiler = lisa::compiler();
   compiler.compile(type_checker.fn_table);
   compiler.compile(*ast);
