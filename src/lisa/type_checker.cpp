@@ -3,12 +3,14 @@
 #include <lisa/parser.hpp>
 #include <algorithm>
 #include <iterator>
+#include <utility>
 #include <vector>
 
 using type_t = lisa::type;
 using std::back_inserter;
 using std::transform;
 using std::vector;
+using std::pair;
 using ST::string;
 
 namespace lisa {
@@ -58,14 +60,11 @@ auto fn_call::type(type_checker &t) -> type_t* {
     a->type(t);
   }
   if (this->fn_name->is_op) {
-    if (this->fn_name->name == "+") {
-      this->fn_name->name = "__fadd";
-    }
-    else if (this->fn_name->name == "-") {
-      this->fn_name->name = "__fsub";
-    }
-    else if (this->fn_name->name == "*") {
-      this->fn_name->name = "__fmul";
+    for (auto &&[op, name] : {pair{"+", "__fadd"}, {"-", "__fsub"}, {"*", "__fmul"}}) {
+      if (this->fn_name->name == op) {
+        this->fn_name->name = name;
+        break;
+      }
     }
   }
   if (auto found = prim_fn::find(this->fn_name->name); found) {
