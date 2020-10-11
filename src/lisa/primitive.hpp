@@ -35,13 +35,19 @@ inline prim_fn prim_iadd("__iadd", &i32, 2, [](compiler &c, const std::vector<no
 inline prim_fn prim_isub("__isub", &i32, 2, [](compiler &c, const std::vector<node *>& args) -> llvm::Value* {
   auto* lhs = args[0]->gen(c);
   auto* rhs = args[1]->gen(c);
-  return c.builder.CreateSub(lhs, rhs, "primsub");
+  return c.builder.CreateSub(rhs, lhs, "primsub");
 });
 
 inline prim_fn prim_imul("__imul", &i32, 2, [](compiler &c, const std::vector<node *>& args) -> llvm::Value* {
   auto* lhs = args[0]->gen(c);
   auto* rhs = args[1]->gen(c);
   return c.builder.CreateMul(lhs, rhs, "primmul");
+});
+
+inline prim_fn prim_idiv("__idiv", &i32, 2, [](compiler &c, const std::vector<node *>& args) -> llvm::Value* {
+  auto* lhs = args[0]->gen(c);
+  auto* rhs = args[1]->gen(c);
+  return c.builder.CreateSDiv(rhs, lhs, "primdiv");
 });
 
 inline prim_fn prim_fadd("__fadd", &f64, 2, [](compiler &c, const std::vector<node *>& args) -> llvm::Value* {
@@ -53,13 +59,19 @@ inline prim_fn prim_fadd("__fadd", &f64, 2, [](compiler &c, const std::vector<no
 inline prim_fn prim_fsub("__fsub", &f64, 2, [](compiler &c, const std::vector<node *>& args) -> llvm::Value* {
   auto* lhs = args[0]->gen(c);
   auto* rhs = args[1]->gen(c);
-  return c.builder.CreateFSub(lhs, rhs, "primsub");
+  return c.builder.CreateFSub(rhs, lhs, "primsub");
 });
 
 inline prim_fn prim_fmul("__fmul", &f64, 2, [](compiler &c, const std::vector<node *>& args) -> llvm::Value* {
   auto* lhs = args[0]->gen(c);
   auto* rhs = args[1]->gen(c);
   return c.builder.CreateFMul(lhs, rhs, "primmul");
+});
+
+inline prim_fn prim_fdiv("__fdiv", &f64, 2, [](compiler &c, const std::vector<node *>& args) -> llvm::Value* {
+  auto* lhs = args[0]->gen(c);
+  auto* rhs = args[1]->gen(c);
+  return c.builder.CreateFDiv(rhs, lhs, "primdiv");
 });
 
 inline prim_fn prim_return("return", &statement, 1, [](compiler &c, const std::vector<node *>& args) -> llvm::Value* {

@@ -67,9 +67,11 @@ auto fn_call::type(type_checker &t) -> type_t* {
     for (auto &&[op, name] : {pair{"+",  "__iadd"},
                                   {"-",  "__isub"},
                                   {"*",  "__imul"},
+                                  {"/",  "__idiv"},
                                   {"+.", "__fadd"},
                                   {"-.", "__fsub"},
-                                  {"*.", "__fmul"}}
+                                  {"*.", "__fmul"},
+                                  {"/.", "__fdiv"}}
     ) {
       if (this->fn_name->name == op) {
         this->fn_name->name = name;
