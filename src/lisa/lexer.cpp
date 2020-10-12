@@ -12,9 +12,9 @@ namespace lisa {
 auto str_of(token_kind kind) -> string {
   switch(kind) {
     case token_kind::lpar:
-      return "lpar";
+      return "\"(\"";
     case token_kind::rpar:
-      return "rpar";
+      return "\")\"";
     case token_kind::word:
       return "word";
     case token_kind::inum:
@@ -22,7 +22,7 @@ auto str_of(token_kind kind) -> string {
     case token_kind::fnum:
       return "fnum";
     case token_kind::tysep:
-      return "tysep";
+      return "\"'\"";
     case token_kind::op:
       return "op";
     default:

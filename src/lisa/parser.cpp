@@ -37,8 +37,8 @@ auto parser::expect(token_kind kind, const token &t) -> bool {
     return false;
   }
   else {
-    this->report(t.pos, format("Expected <{}>, but found \"{}\"(<{}>)",
-          str_of(kind), t.raw, str_of(t.kind)));
+    this->report(t.pos, format("Expected {}, but found \"{}\"",
+          str_of(kind), t.raw));
     return true;
   }
 }
