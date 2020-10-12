@@ -1,0 +1,11 @@
+(def eq (x'i32 y'i32) (= x y))
+
+(def same-all (x'i32 y'i32 z'i32)
+  (and (eq x y)
+       (eq y z)))
+
+(def uniq-all (x'i32 y'i32 z'i32)
+  (not (or (eq x y) (eq y z))))
+
+(def main ()
+  (and (same-all 2 2 2) (uniq-all 1 2 3)))

@@ -1,0 +1,8 @@
+(def sum-to (n 'i32)
+  (/ 2 (* n (+ 1 n))))
+
+(def sum-range (from 'i32 to 'i32)
+  (- (sum-to (- 1 from)) (sum-to to)))
+
+(def main ()
+  (sum-to 10))
