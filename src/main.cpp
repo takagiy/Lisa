@@ -26,10 +26,13 @@ auto main(int argc, const char* argv[]) -> int {
   auto parser = lisa::parser();
   auto ast = parser.parse(tokens);
 
-
   if (!parser.errors.empty()) {
+    auto lines = code.split('\n');
+
     for(auto &&e: parser.errors) {
       fmt::print("error(at {}): {}\n", e.pos.to_str().view(), e.msg.view());
+      fmt::print("{}\n", lines[e.pos.line - 1].view());
+      fmt::print("{}^\n", ST::string::fill(e.pos.character - 1, ' ').view());
     }
     return 1;
   }
