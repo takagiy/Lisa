@@ -1,14 +1,20 @@
 #include <lisa/lexer.hpp>
+#include <string_theory/format>
 #include <cstdlib>
 #include <cctype>
 
 using std::vector;
 using ST::string;
+using ST::format;
 using lisa::token;
 using lisa::token_kind;
 using std::size_t;
 
 namespace lisa {
+auto token_pos::to_str() const -> string {
+  return format("{}:{}", this->line, this->character);
+}
+
 auto str_of(token_kind kind) -> string {
   switch(kind) {
     case token_kind::lpar:

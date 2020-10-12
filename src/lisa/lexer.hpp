@@ -15,6 +15,8 @@ auto str_of(token_kind) -> ST::string;
 struct token_pos {
   std::size_t line;
   std::size_t character;
+
+  auto to_str() const -> ST::string;
 };
 
 struct token {

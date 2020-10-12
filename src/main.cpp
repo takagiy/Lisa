@@ -29,7 +29,7 @@ auto main(int argc, const char* argv[]) -> int {
 
   if (!parser.errors.empty()) {
     for(auto &&e: parser.errors) {
-      fmt::print("error(at {}:{}): {}\n", e.pos.line, e.pos.character, e.msg.view());
+      fmt::print("error(at {}): {}\n", e.pos.to_str().view(), e.msg.view());
     }
     return 1;
   }
