@@ -10,6 +10,7 @@ namespace lisa {
 struct type;
 extern type i32;
 extern type f64;
+extern type bool_;
 extern type statement;
 
 struct prim_fn {
@@ -25,6 +26,35 @@ struct prim_fn {
 };
 
 inline std::unordered_map<ST::string, prim_fn*> prim_fn_map;
+
+inline prim_fn prim_and("and", &bool_, 2, [](compiler &c, const std::vector<node *>& args) -> llvm::Value* {
+  auto* lhs = args[0]->gen(c);
+  auto* rhs = args[1]->gen(c);
+  return c.builder.CreateAnd(lhs, rhs, "primand");
+});
+
+inline prim_fn prim_or("or", &bool_, 2, [](compiler &c, const std::vector<node *>& args) -> llvm::Value* {
+  auto* lhs = args[0]->gen(c);
+  auto* rhs = args[1]->gen(c);
+  return c.builder.CreateOr(lhs, rhs, "primor");
+});
+
+inline prim_fn prim_not("not", &bool_, 1, [](compiler &c, const std::vector<node *>& args) -> llvm::Value* {
+  auto* arg = args[0]->gen(c);
+  return c.builder.CreateNot(arg, "primnot");
+});
+
+inline prim_fn prim_ieq("__ieq", &bool_, 2, [](compiler &c, const std::vector<node *>& args) -> llvm::Value* {
+  auto* lhs = args[0]->gen(c);
+  auto* rhs = args[1]->gen(c);
+  return c.builder.CreateICmpEQ(lhs, rhs, "primeq");
+});
+
+inline prim_fn prim_feq("__feq", &bool_, 2, [](compiler &c, const std::vector<node *>& args) -> llvm::Value* {
+  auto* lhs = args[0]->gen(c);
+  auto* rhs = args[1]->gen(c);
+  return c.builder.CreateFCmpOEQ(lhs, rhs, "primeq");
+});
 
 inline prim_fn prim_iadd("__iadd", &i32, 2, [](compiler &c, const std::vector<node *>& args) -> llvm::Value* {
   auto* lhs = args[0]->gen(c);

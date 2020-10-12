@@ -29,6 +29,7 @@ struct type {
 inline std::unordered_map<ST::string, type*> typename_map;
 inline type i32("i32", (type::raw_t*)(&llvm::Type::getInt32Ty));
 inline type f64("f64", &llvm::Type::getDoubleTy);
+inline type bool_("bool", (type::raw_t*)(&llvm::Type::getInt1Ty));
 inline type statement("statement", &llvm::Type::getVoidTy);
 
 struct fn_type {
