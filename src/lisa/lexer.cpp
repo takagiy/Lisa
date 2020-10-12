@@ -34,11 +34,22 @@ auto str_of_char(char ch) {
   string result;
   return result += ch;
 }
-auto read_tokens_(vector<token> &result, const string& s) {
+
+auto make_pos(size_t l, size_t c) {
+  return token_pos {l, c + 1};
+}
+
+auto read_tokens_(vector<token> &result, const string& s, size_t line_n) {
   for(size_t i = 0; i < s.size(); ++i) {
+    // consume whitespaces
+    while(isspace(s[i])) {
+      ++i;
+    }
+
     // left paren
     if(s[i] == '(') {
       result.push_back(token{
+          make_pos(line_n, i),
           token_kind::lpar,
           str_of_char(s[i])
       });
@@ -46,6 +57,7 @@ auto read_tokens_(vector<token> &result, const string& s) {
     // right paren
     else if (s[i] == ')') {
       result.push_back(token{
+          make_pos(line_n, i),
           token_kind::rpar,
           str_of_char(s[i])
       });
@@ -60,6 +72,7 @@ auto read_tokens_(vector<token> &result, const string& s) {
       }
 
       result.push_back(token{
+          make_pos(line_n, i),
           token_kind::word,
           read
       });
@@ -76,6 +89,7 @@ auto read_tokens_(vector<token> &result, const string& s) {
       // integer
       if (i + 1 >= s.size() || s[i + 1] != '.') {
         result.push_back(token{
+            make_pos(line_n, i),
             token_kind::inum,
             read
         });
@@ -90,6 +104,7 @@ auto read_tokens_(vector<token> &result, const string& s) {
         }
 
         result.push_back(token{
+            make_pos(line_n, i),
             token_kind::fnum,
             read
         });
@@ -97,6 +112,7 @@ auto read_tokens_(vector<token> &result, const string& s) {
     }
     else if(s[i] == '\'') {
       result.push_back(token{
+          make_pos(line_n, i),
           token_kind::tysep,
           str_of_char(s[i])
       });
@@ -111,6 +127,7 @@ auto read_tokens_(vector<token> &result, const string& s) {
       }
 
       result.push_back(token{
+          make_pos(line_n, i),
           token_kind::op,
           read
       });
@@ -118,6 +135,7 @@ auto read_tokens_(vector<token> &result, const string& s) {
     // unknown
     else {
       result.push_back(token{
+          make_pos(line_n, i),
           token_kind::invalid,
           str_of_char(s[i])
       });
@@ -128,8 +146,10 @@ auto read_tokens_(vector<token> &result, const string& s) {
 auto lexer::tokenize(const string &code) -> vector<token> {
   vector<token> result{};
 
-  for(auto &&s: code.tokenize()) {
-    read_tokens_(result, s);
+  size_t line_n = 1;
+  for(auto &&s: code.split('\n')) {
+    read_tokens_(result, s, line_n);
+    ++line_n;
   }
 
   return result;

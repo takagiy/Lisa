@@ -19,7 +19,8 @@ auto main(int argc, const char* argv[]) -> int {
   auto tokens = lexer.tokenize(code);
 
   for(auto &&token: tokens) {
-    fmt::print("{}: \"{}\"\n", str_of(token.kind).view(), token.raw.view());
+    fmt::print("{}: \"{}\" at {}:{}\n",
+        str_of(token.kind).view(), token.raw.view(), token.pos.line, token.pos.character);
   }
 
   auto parser = lisa::parser();
