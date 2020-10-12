@@ -45,9 +45,10 @@ auto read_tokens_(vector<token> &result, const string& s, size_t line_n) {
     while(isspace(s[i])) {
       ++i;
     }
-
+    //empty line
+    if (i >= s.size()) {}
     // left paren
-    if(s[i] == '(') {
+    else if (s[i] == '(') {
       result.push_back(token{
           make_pos(line_n, i),
           token_kind::lpar,

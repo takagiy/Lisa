@@ -26,7 +26,6 @@ auto main(int argc, const char* argv[]) -> int {
   auto parser = lisa::parser();
   auto ast = parser.parse(tokens);
 
-  fmt::print("{}\n", ast->repr().view());
 
   if (!parser.errors.empty()) {
     for(auto &&e: parser.errors) {
@@ -34,6 +33,8 @@ auto main(int argc, const char* argv[]) -> int {
     }
     return 1;
   }
+
+  fmt::print("{}\n", ast->repr().view());
 
   auto type_checker = lisa::type_checker();
   type_checker.type_check(*ast);
