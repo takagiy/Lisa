@@ -1,4 +1,5 @@
 #include <lisa/parser.hpp>
+#include <lisa/lexer.hpp>
 #include <string_theory/format>
 #include <algorithm>
 #include <iterator>
@@ -16,6 +17,32 @@ using lisa::token;
 using lisa::token_kind;
 
 namespace lisa {
+auto parser::report(const token_pos &pos, const string &msg) {
+  this->errors.emplace_back(pos, msg);
+}
+
+auto parser::expect(const string &word, const token &t) -> bool {
+  if (word == t.raw) {
+    return false;
+  }
+  else {
+    this->report(t.pos, format("Expected \"{}\", but found \"{}\"",
+          word, t.raw));
+    return true;
+  }
+}
+
+auto parser::expect(token_kind kind, const token &t) -> bool {
+  if (kind == t.kind) {
+    return false;
+  }
+  else {
+    this->report(t.pos, format("Expected <{}>, but found \"{}\"(<{}>)",
+          str_of(kind), t.raw, str_of(t.kind)));
+    return true;
+  }
+}
+
 auto parser::parse(const vector<token> &t) -> uniq<node> {
   vector<uniq<node>> result;
   size_t i = 0;
@@ -32,25 +59,26 @@ auto parser::parse(const vector<token> &t, std::size_t &i) -> uniq<node> {
       return nullptr;
     }
     else if (t[i + 1].kind == token_kind::word && t[i + 1].raw == "def") {
-      return def::parse(t, i);
+      return def::parse(*this, t, i);
     }
     else if (t[i + 1].kind == token_kind::word || t[i + 1].kind == token_kind::op) {
-      return fn_call::parse(t, i);
+      return fn_call::parse(*this, t, i);
     }
     else {
       return nullptr;
     }
   }
   else if (t[i].kind == token_kind::word || t[i].kind == token_kind::op) {
-    return id::parse(t, i);
+    return id::parse(*this, t, i);
   }
   else if (t[i].kind == token_kind::inum) {
-    return inum::parse(t, i);
+    return inum::parse(*this, t, i);
   }
   else if (t[i].kind == token_kind::fnum) {
-    return fnum::parse(t, i);
+    return fnum::parse(*this, t, i);
   }
   else {
+    this->report(t[i].pos, format("Unexpected token \"{}\"", t[i].raw));
     return nullptr;
   }
 }
@@ -115,90 +143,87 @@ auto fn_call::ref_args() const -> vector<node *> {
 }
 
 
-auto id::parse(const vector<token> &t, size_t &i) -> uniq<id> {
+auto id::parse(parser&, const vector<token> &t, size_t &i) -> uniq<id> {
   return make_unique<id>(t[i].raw, t[i].kind == token_kind::op);
 }
 
-auto inum::parse(const vector<token> &t, size_t &i) -> uniq<inum> {
+auto inum::parse(parser&, const vector<token> &t, size_t &i) -> uniq<inum> {
   return make_unique<inum>(t[i].raw.to_ulong_long());
 }
 
-auto fnum::parse(const vector<token> &t, size_t &i) -> uniq<fnum> {
+auto fnum::parse(parser&, const vector<token> &t, size_t &i) -> uniq<fnum> {
   return make_unique<fnum>(t[i].raw.to_double());
 }
 
-auto parse_body(const vector<token> &t, size_t &i)  -> vector<uniq<node>> {
+auto parse_body(parser& p, const vector<token> &t, size_t &i)  -> vector<uniq<node>> {
   vector<uniq<node>> result;
-  parser parser;
-  auto parsed = parser.parse(t, i);
 
-  while(parsed) {
-    result.push_back(std::move(parsed));
+  while(i < t.size() && t[i].kind != token_kind::rpar) {
+    result.push_back(p.parse(t, i));
     ++i;
-    parsed = parser.parse(t, i);
   }
 
-  if (t[i].kind != token_kind::rpar) {
+  if (p.expect(token_kind::rpar, t[i])) {
     return {};
   }
 
   return result;
 }
 
-auto fn_call::parse(const vector<token> &t, size_t &i) -> uniq<fn_call> {
-  if (t[i].kind != token_kind::lpar) {
+auto fn_call::parse(parser& p, const vector<token> &t, size_t &i) -> uniq<fn_call> {
+  if (p.expect(token_kind::lpar, t[i])) {
     return nullptr;
   }
   ++i;
 
-  auto fn_name = id::parse(t, i);
+  auto fn_name = id::parse(p, t, i);
   ++i;
 
-  auto args = parse_body(t, i);
+  auto args = parse_body(p, t, i);
 
   return make_unique<fn_call>(std::move(fn_name), std::move(args));
 }
 
-auto parse_def_args(const vector<token> &t, size_t &i) -> vector<uniq<typed<id>>> {
-  if (t[i].kind != token_kind::lpar) {
+auto parse_def_args(parser& p, const vector<token> &t, size_t &i) -> vector<uniq<typed<id>>> {
+  if (p.expect(token_kind::lpar, t[i])) {
     return {};
   }
   ++i;
-  
+
   vector<uniq<typed<id>>> result;
 
   while(i < t.size() && t[i].kind == token_kind::word) {
-    auto arg_name = id::parse(t, i);
+    auto arg_name = id::parse(p, t, i);
     ++i;
-    result.push_back(typed<id>::parse(std::move(arg_name), t, i));
+    result.push_back(typed<id>::parse(p, std::move(arg_name), t, i));
     ++i;
   }
-  
-  if (t[i].kind != token_kind::rpar) {
+
+  if (p.expect(token_kind::rpar, t[i])) {
     return {};
   }
 
   return result;
 }
 
-auto def::parse(const vector<token> &t, size_t &i) -> uniq<def> {
-  if (t[i].kind != token_kind::lpar) {
+auto def::parse(parser& p, const vector<token> &t, size_t &i) -> uniq<def> {
+  if (p.expect(token_kind::lpar, t[i])) {
     return nullptr;
   }
   ++i;
 
-  if (t[i].raw != "def") {
+  if (p.expect("def", t[i])) {
     return nullptr;
   }
   ++i;
 
-  auto fn_name = id::parse(t, i);
+  auto fn_name = id::parse(p, t, i);
   ++i;
 
-  auto args = parse_def_args(t, i);
+  auto args = parse_def_args(p, t, i);
   ++i;
 
-  auto body = parse_body(t, i);
+  auto body = parse_body(p, t, i);
 
   return make_unique<def>(std::move(fn_name), std::move(args), std::move(body));
 }

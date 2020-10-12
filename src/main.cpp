@@ -28,6 +28,13 @@ auto main(int argc, const char* argv[]) -> int {
 
   fmt::print("{}\n", ast->repr().view());
 
+  if (!parser.errors.empty()) {
+    for(auto &&e: parser.errors) {
+      fmt::print("error(at {}:{}): {}\n", e.pos.line, e.pos.character, e.msg.view());
+    }
+    return 1;
+  }
+
   auto type_checker = lisa::type_checker();
   type_checker.type_check(*ast);
 

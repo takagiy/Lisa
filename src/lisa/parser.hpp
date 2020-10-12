@@ -1,6 +1,7 @@
 #ifndef LISA_PARSER
 #define LISA_PARSER
 #include <lisa/lexer.hpp>
+#include <lisa/util.hpp>
 #include <llvm/IR/Value.h>
 #include <string_theory/string>
 #include <memory>
@@ -12,6 +13,19 @@ struct compiler;
 struct type_checker;
 struct type;
 using type_t = type;
+
+struct node;
+
+struct parser {
+  std::vector<error> errors;
+
+  auto parse(const std::vector<token> &) -> std::unique_ptr<node>;
+  auto parse(const std::vector<token> &, std::size_t &i) -> std::unique_ptr<node>;
+
+  auto report(const token_pos&, const ST::string &);
+  auto expect(const ST::string &, const token &) -> bool;
+  auto expect(token_kind, const token &) -> bool;
+};
 
 struct node {
   virtual ~node();
@@ -30,7 +44,7 @@ struct id : node {
   auto gen(compiler &) const -> llvm::Value*;
   auto type(type_checker &) -> type_t*;
 
-  static auto parse(const std::vector<token> &, std::size_t &) -> std::unique_ptr<id>;
+  static auto parse(parser&, const std::vector<token> &, std::size_t &) -> std::unique_ptr<id>;
 };
 
 struct inum : node {
@@ -42,7 +56,7 @@ struct inum : node {
   auto gen(compiler &) const -> llvm::Value*;
   auto type(type_checker &) -> type_t*;
 
-  static auto parse(const std::vector<token> &, std::size_t &) -> std::unique_ptr<inum>;
+  static auto parse(parser&, const std::vector<token> &, std::size_t &) -> std::unique_ptr<inum>;
 };
 
 struct fnum : node {
@@ -54,7 +68,7 @@ struct fnum : node {
   auto gen(compiler &) const -> llvm::Value*;
   auto type(type_checker &) -> type_t*;
 
-  static auto parse(const std::vector<token> &, std::size_t &) -> std::unique_ptr<fnum>;
+  static auto parse(parser&, const std::vector<token> &, std::size_t &) -> std::unique_ptr<fnum>;
 };
 
 template<class T>
@@ -71,7 +85,7 @@ struct typed : node {
   auto gen(compiler &) const -> llvm::Value*;
   auto type(type_checker &) -> type_t*;
 
-  static auto parse(std::unique_ptr<T>&&, const std::vector<token> &, std::size_t &) -> std::unique_ptr<typed<T>>;
+  static auto parse(parser&, std::unique_ptr<T>&&, const std::vector<token> &, std::size_t &) -> std::unique_ptr<typed<T>>;
 };
 
 struct def : node {
@@ -89,7 +103,7 @@ struct def : node {
   auto gen(compiler &) const -> llvm::Value*;
   auto type(type_checker &) -> type_t*;
 
-  static auto parse(const std::vector<token> &, std::size_t &) -> std::unique_ptr<def>;
+  static auto parse(parser&, const std::vector<token> &, std::size_t &) -> std::unique_ptr<def>;
 };
 
 struct fn_call : node {
@@ -107,7 +121,7 @@ struct fn_call : node {
 
   auto ref_args() const -> std::vector<node *>;
 
-  static auto parse(const std::vector<token> &, std::size_t &) -> std::unique_ptr<fn_call>;
+  static auto parse(parser&, const std::vector<token> &, std::size_t &) -> std::unique_ptr<fn_call>;
 };
 
 struct progn : node {
@@ -121,11 +135,6 @@ struct progn : node {
   auto gen(compiler &) const -> llvm::Value*;
   auto type(type_checker &) -> type_t*;
 };
-
-struct parser {
-  auto parse(const std::vector<token> &) -> std::unique_ptr<node>;
-  auto parse(const std::vector<token> &, std::size_t &i) -> std::unique_ptr<node>;
-};
 }
 
 #include <string_theory/format>
@@ -134,13 +143,13 @@ struct parser {
 
 namespace lisa {
 template<class T>
-auto typed<T>::parse(std::unique_ptr<T>&& raw, const std::vector<token> &t, size_t &i) -> std::unique_ptr<typed<T>> {
-  if (t[i].kind != token_kind::tysep) {
+auto typed<T>::parse(parser& p, std::unique_ptr<T>&& raw, const std::vector<token> &t, size_t &i) -> std::unique_ptr<typed<T>> {
+  if (p.expect(token_kind::tysep, t[i])) {
     return nullptr;
   }
   ++i;
 
-  auto ty_name = id::parse(t, i);
+  auto ty_name = id::parse(p, t, i);
 
   return std::make_unique<typed<T>>(std::move(ty_name), std::move(raw));
 }
