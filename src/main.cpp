@@ -4,6 +4,7 @@
 #include <lisa/type_checker.hpp>
 #include <lisa/compiler.hpp>
 #include <lisa/file.hpp>
+#include <lisa/driver_interface.hpp>
 #include <llvm/Support/raw_ostream.h>
 #include <string>
 
@@ -49,4 +50,6 @@ auto main(int argc, const char* argv[]) -> int {
   ss << compiler.module;
   ss.flush();
   fmt::print("{}\n", ir);
+
+  lisa::make_executable("a.out", compiler);
 }
