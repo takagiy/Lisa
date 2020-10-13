@@ -7,7 +7,7 @@
 
 namespace lisa {
 enum class token_kind {
-  lpar, rpar, word, inum, fnum, op, tysep, invalid
+  lpar, rpar, word, inum, fnum, op, tysep, eof, invalid
 };
 
 auto str_of(token_kind) -> ST::string;

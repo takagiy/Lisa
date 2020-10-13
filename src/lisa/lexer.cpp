@@ -31,6 +31,8 @@ auto str_of(token_kind kind) -> string {
       return "\"'\"";
     case token_kind::op:
       return "op";
+    case token_kind::eof:
+      return "eof";
     default:
       return "invalid";
   }
@@ -158,6 +160,12 @@ auto lexer::tokenize(const string &code) -> vector<token> {
     read_tokens_(result, s, line_n);
     ++line_n;
   }
+
+  result.push_back(token{
+      result.back().pos,
+      token_kind::eof,
+      "EOF"
+  });
 
   return result;
 }
