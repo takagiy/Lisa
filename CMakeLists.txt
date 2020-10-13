@@ -5,6 +5,7 @@ find_package(string_theory REQUIRED)
 find_package(cppfs CONFIG REQUIRED)
 find_package(LLVM CONFIG REQUIRED)
 find_package(fmt REQUIRED)
+find_package(tl-expected REQUIRED)
 
 add_library(ext_llvm INTERFACE)
 target_link_libraries(ext_llvm INTERFACE LLVM)
@@ -26,7 +27,8 @@ target_link_libraries(liblisa PUBLIC
   string_theory
   cppfs::cppfs
   ext_llvm
-  fmt)
+  fmt
+  tl::expected)
 
 add_executable(lisa src/main.cpp)
 target_compile_features(lisa PUBLIC cxx_std_20)
@@ -34,4 +36,5 @@ target_link_libraries(lisa PUBLIC
   liblisa
   string_theory
   cppfs::cppfs
-  fmt)
+  fmt
+  tl::expected)

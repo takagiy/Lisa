@@ -11,12 +11,17 @@
 auto main(int argc, const char* argv[]) -> int {
   if (argc <= 1) {
     fmt::print("error: no input files\n");
-    return -1;
+    return 1;
   }
   auto code = lisa::read_file(argv[1]);
 
+  if (!code) {
+    fmt::print("error: {}\n", code.error().view());
+    return 1;
+  }
+
   auto lexer = lisa::lexer();
-  auto tokens = lexer.tokenize(code);
+  auto tokens = lexer.tokenize(*code);
 
   for(auto &&token: tokens) {
     fmt::print("{}: \"{}\" at {}:{}\n",
@@ -27,7 +32,7 @@ auto main(int argc, const char* argv[]) -> int {
   auto ast = parser.parse(tokens);
 
   if (!parser.errors.empty()) {
-    auto lines = code.split('\n');
+    auto lines = code->split('\n');
 
     for(auto &&e: parser.errors) {
       fmt::print("error(at {}): {}\n", e.pos.to_str().view(), e.msg.view());
