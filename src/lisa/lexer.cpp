@@ -23,6 +23,8 @@ auto str_of(token_kind kind) -> string {
       return "\")\"";
     case token_kind::word:
       return "word";
+    case token_kind::str:
+      return "string";
     case token_kind::inum:
       return "inum";
     case token_kind::fnum:
@@ -83,6 +85,22 @@ auto read_tokens_(vector<token> &result, const string& s, size_t line_n) {
       result.push_back(token{
           make_pos(line_n, i),
           token_kind::word,
+          read
+      });
+    }
+    // string
+    else if (s[i] == '"') {
+      string read;
+
+      while(i + 1 < s.size() && s[i + 1] != '"') {
+        ++i;
+        read += s[i];
+      }
+      ++i;
+
+      result.push_back(token{
+          make_pos(line_n, i),
+          token_kind::str,
           read
       });
     }
@@ -161,8 +179,11 @@ auto lexer::tokenize(const string &code) -> vector<token> {
     ++line_n;
   }
 
+  auto eof_pos = result.back().pos;
+  ++eof_pos.character;
+
   result.push_back(token{
-      result.back().pos,
+      eof_pos,
       token_kind::eof,
       "EOF"
   });
