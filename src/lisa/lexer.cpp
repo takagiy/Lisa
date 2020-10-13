@@ -179,8 +179,11 @@ auto lexer::tokenize(const string &code) -> vector<token> {
     ++line_n;
   }
 
-  auto eof_pos = result.back().pos;
-  ++eof_pos.character;
+  token_pos eof_pos = {0, 0};
+  if (!result.empty()) {
+    eof_pos = result.back().pos;
+    ++eof_pos.character;
+  }
 
   result.push_back(token{
       eof_pos,
