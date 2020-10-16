@@ -47,6 +47,17 @@ auto main(int argc, const char* argv[]) -> int {
   auto type_checker = lisa::type_checker();
   type_checker.type_check(*ast);
 
+  if (!type_checker.errors.empty()) {
+    auto lines = code->split('\n');
+
+    for(auto &&e: type_checker.errors) {
+      fmt::print("error(at {}): {}\n", e.pos.to_str().view(), e.msg.view());
+      fmt::print("{}\n", lines[e.pos.line - 1].view());
+      fmt::print("{}^\n", ST::string::fill(e.pos.character - 1, ' ').view());
+    }
+    return 1;
+  }
+
   for(auto &&[name, type]: type_checker.fn_table) {
     fmt::print("{}:\n", name.view());
     fmt::print("(");

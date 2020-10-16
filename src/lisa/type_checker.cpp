@@ -1,6 +1,7 @@
 #include <lisa/type_checker.hpp>
 #include <lisa/primitive.hpp>
 #include <lisa/parser.hpp>
+#include <string_theory/format>
 #include <algorithm>
 #include <iterator>
 #include <utility>
@@ -12,6 +13,7 @@ using std::transform;
 using std::vector;
 using std::pair;
 using ST::string;
+using ST::format;
 
 namespace lisa {
 type::type(const string &n, type::raw_t* r) : name(n), raw(r) {
@@ -21,8 +23,21 @@ auto type::of_str(const string &name) -> type* {
   return typename_map[name];
 }
 
+type_checker::type_checker() : fn_table(), var_table(), errors() {
+  for(auto &&[name, p] : prim_fn_map) {
+    fn_table[name] = p->t;
+  }
+}
+
 auto type_checker::type_check(node &ast) -> void {
   ast.type(*this);
+}
+
+auto type_checker::expect(const token_pos &pos, type* expected, type* given) -> void {
+  if (expected != given) {
+    this->errors.push_back({
+        pos, format("Expected type {}, but found {}", expected->name, given->name)});
+  }
 }
 
 auto id::type(type_checker &t) -> type_t* {
@@ -81,9 +96,12 @@ auto fn_call::type(type_checker &t) -> type_t* {
       }
     }
   }
-  if (auto found = prim_fn::find(this->fn_name->name); found) {
-    return found->ret_type;
+
+  size_t i = 0;
+  for (auto &&a: this->args) {
+    t.expect(a->pos, t.fn_table[this->fn_name->name].args[i], a->type(t));
   }
+
   return t.fn_table[this->fn_name->name].ret;
 }
 

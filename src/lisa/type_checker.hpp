@@ -1,6 +1,7 @@
 #ifndef LISA_TYPE_CHECKER
 #define LISA_TYPE_CHECKER
 
+#include <lisa/util.hpp>
 #include <llvm/IR/DerivedTypes.h>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Type.h>
@@ -40,9 +41,12 @@ struct fn_type {
 struct type_checker {
   std::unordered_map<ST::string, fn_type> fn_table;
   std::unordered_map<ST::string, type*> var_table;
-  type_checker() : fn_table(), var_table() {}
+  std::vector<error> errors;
+  type_checker();
 
   auto type_check(node &) -> void;
+
+  auto expect(const token_pos&, type*, type*) -> void;
 };
 }
 

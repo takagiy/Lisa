@@ -56,7 +56,7 @@ auto parser::parse(const vector<token> &t) -> uniq<node> {
     result.push_back(this->parse(t, i));
     forward(i, t);
   }
-  return make_unique<progn>(std::move(result));
+  return make_unique<progn>(token_pos{1, 1}, std::move(result));
 }
 
 auto parser::parse(const vector<token> &t, std::size_t &i) -> uniq<node> {
@@ -151,15 +151,15 @@ auto fn_call::ref_args() const -> vector<node *> {
 
 
 auto id::parse(parser&, const vector<token> &t, size_t &i) -> uniq<id> {
-  return make_unique<id>(t[i].raw, t[i].kind == token_kind::op);
+  return make_unique<id>(t[i].pos, t[i].raw, t[i].kind == token_kind::op);
 }
 
 auto inum::parse(parser&, const vector<token> &t, size_t &i) -> uniq<inum> {
-  return make_unique<inum>(t[i].raw.to_ulong_long());
+  return make_unique<inum>(t[i].pos, t[i].raw.to_ulong_long());
 }
 
 auto fnum::parse(parser&, const vector<token> &t, size_t &i) -> uniq<fnum> {
-  return make_unique<fnum>(t[i].raw.to_double());
+  return make_unique<fnum>(t[i].pos, t[i].raw.to_double());
 }
 
 auto parse_body(parser& p, const vector<token> &t, size_t &i)  -> vector<uniq<node>> {
@@ -188,7 +188,7 @@ auto fn_call::parse(parser& p, const vector<token> &t, size_t &i) -> uniq<fn_cal
 
   auto args = parse_body(p, t, i);
 
-  return make_unique<fn_call>(std::move(fn_name), std::move(args));
+  return make_unique<fn_call>(t[i].pos, std::move(fn_name), std::move(args));
 }
 
 auto parse_def_args(parser& p, const vector<token> &t, size_t &i) -> vector<uniq<typed<id>>> {
@@ -232,6 +232,6 @@ auto def::parse(parser& p, const vector<token> &t, size_t &i) -> uniq<def> {
 
   auto body = parse_body(p, t, i);
 
-  return make_unique<def>(std::move(fn_name), std::move(args), std::move(body));
+  return make_unique<def>(t[i].pos, std::move(fn_name), std::move(args), std::move(body));
 }
 }

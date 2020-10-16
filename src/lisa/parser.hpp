@@ -28,6 +28,9 @@ struct parser {
 };
 
 struct node {
+  token_pos pos;
+
+  node(const token_pos &p) : pos(p) {}
   virtual ~node();
   virtual auto repr() const -> ST::string;
   virtual auto gen(compiler &) const -> llvm::Value* = 0;
@@ -38,7 +41,7 @@ struct id : node {
   ST::string name;
   bool is_op;
   
-  id(const ST::string &n, bool i) : name(n), is_op(i) {}
+  id(const token_pos &p, const ST::string &n, bool i) : node(p), name(n), is_op(i) {}
   
   auto repr() const -> ST::string;
   auto gen(compiler &) const -> llvm::Value*;
@@ -50,7 +53,7 @@ struct id : node {
 struct inum : node {
   unsigned long long number;
   
-  inum(unsigned long long n) : number(n) {}
+  inum(const token_pos &p, unsigned long long n) : node(p), number(n) {}
 
   auto repr() const -> ST::string;
   auto gen(compiler &) const -> llvm::Value*;
@@ -62,7 +65,7 @@ struct inum : node {
 struct fnum : node {
   double number;
   
-  fnum(double n) : number(n) {}
+  fnum(const token_pos &p, double n) : node(p), number(n) {}
 
   auto repr() const -> ST::string;
   auto gen(compiler &) const -> llvm::Value*;
@@ -77,9 +80,10 @@ struct typed : node {
   std::unique_ptr<T> raw;
 
   typed(
+      const token_pos &p,
       std::unique_ptr<id> &&t,
       std::unique_ptr<T> &&r
-  ) : ty_name(std::move(t)), raw(std::move(r)) {}
+  ) : node(p), ty_name(std::move(t)), raw(std::move(r)) {}
 
   auto repr() const -> ST::string;
   auto gen(compiler &) const -> llvm::Value*;
@@ -94,10 +98,11 @@ struct def : node {
   std::vector<std::unique_ptr<node>> body;
 
   def(
+      const token_pos &p,
       std::unique_ptr<id> &&f,
       std::vector<std::unique_ptr<typed<id>>> &&a,
       std::vector<std::unique_ptr<node>> &&b
-  ) : fn_name(std::move(f)), args(std::move(a)), body(std::move(b)) {}
+  ) : node(p), fn_name(std::move(f)), args(std::move(a)), body(std::move(b)) {}
 
   auto repr() const -> ST::string;
   auto gen(compiler &) const -> llvm::Value*;
@@ -111,9 +116,10 @@ struct fn_call : node {
   std::vector<std::unique_ptr<node>> args;
 
   fn_call(
+      const token_pos &p,
       std::unique_ptr<id> &&f,
       std::vector<std::unique_ptr<node>> &&a
-  ) : fn_name(std::move(f)), args(std::move(a)) {}
+  ) : node(p), fn_name(std::move(f)), args(std::move(a)) {}
   
   auto repr() const -> ST::string;
   auto gen(compiler &) const -> llvm::Value*;
@@ -128,8 +134,9 @@ struct progn : node {
   std::vector<std::unique_ptr<node>> children;
 
   progn(
+      const token_pos &p,
       std::vector<std::unique_ptr<node>> &&c
-  ) : children(std::move(c)) {}
+  ) : node(p), children(std::move(c)) {}
 
   auto repr() const -> ST::string;
   auto gen(compiler &) const -> llvm::Value*;
@@ -151,7 +158,7 @@ auto typed<T>::parse(parser& p, std::unique_ptr<T>&& raw, const std::vector<toke
 
   auto ty_name = id::parse(p, t, i);
 
-  return std::make_unique<typed<T>>(std::move(ty_name), std::move(raw));
+  return std::make_unique<typed<T>>(t[i].pos, std::move(ty_name), std::move(raw));
 }
 
 template<class T>

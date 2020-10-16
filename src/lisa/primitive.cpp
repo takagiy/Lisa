@@ -1,13 +1,10 @@
 #include <lisa/primitive.hpp>
 
 namespace lisa {
-prim_fn::prim_fn(const ST::string &name, type* r, std::size_t a, raw_t* g) :
-  ret_type(r), argc(a), generator(g) { prim_fn_map[name] = this; }
+prim_fn::prim_fn(const ST::string &name, const fn_type &t, raw_t* g) :
+  t(t), generator(g) { prim_fn_map[name] = this; }
 
 auto prim_fn::operator()(compiler &c, const std::vector<node *> &v) const -> llvm::Value* {
-  if (v.size() != this->argc) {
-    return nullptr;
-  }
   return generator(c, v);
 }
 
