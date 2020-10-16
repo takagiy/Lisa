@@ -50,6 +50,18 @@ struct id : node {
   static auto parse(parser&, const std::vector<token> &, std::size_t &) -> std::unique_ptr<id>;
 };
 
+struct boolc : node {
+  bool value;
+
+  boolc(const token_pos &p, bool v) : node(p), value(v) {}
+
+  auto repr() const -> ST::string;
+  auto gen(compiler &) const -> llvm::Value*;
+  auto type(type_checker &) -> type_t*;
+
+  static auto parse(parser &, const std::vector<token> &, std::size_t &) -> std::unique_ptr<boolc>;
+};
+
 struct inum : node {
   unsigned long long number;
   

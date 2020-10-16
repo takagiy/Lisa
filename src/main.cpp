@@ -62,9 +62,9 @@ auto main(int argc, const char* argv[]) -> int {
     fmt::print("{}:\n", name.view());
     fmt::print("(");
     for(auto &&t: type.args) {
-      fmt::print(" {}", t->name.view());
+      fmt::print(" {}", t ? t->name.view() : "nullptr");
     }
-    fmt::print(" ) -> {}\n", type.ret->name.view());
+    fmt::print(" ) -> {}\n", type.ret ? type.ret->name.view() : "nullptr");
   }
 
   fmt::print("{}\n", ast->repr().view());

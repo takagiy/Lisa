@@ -75,6 +75,9 @@ auto parser::parse(const vector<token> &t, std::size_t &i) -> uniq<node> {
       return nullptr;
     }
   }
+  else if (t[i].kind == token_kind::word && (t[i].raw == "true" || t[i].raw == "false")) {
+    return boolc::parse(*this, t, i);
+  }
   else if (t[i].kind == token_kind::word || t[i].kind == token_kind::op) {
     return id::parse(*this, t, i);
   }
@@ -100,6 +103,10 @@ auto id::repr() const -> string {
   return format("{{\"kind\":\"id\", \"name\":\"{}\", \"is_op\": {}}}",
       this->name,
       this->is_op);
+}
+
+auto boolc::repr() const -> string {
+  return format("{{\"kind\":\"boolc\", \"value\":{}}}", this->value);
 }
 
 auto inum::repr() const -> string {
@@ -152,6 +159,10 @@ auto fn_call::ref_args() const -> vector<node *> {
 
 auto id::parse(parser&, const vector<token> &t, size_t &i) -> uniq<id> {
   return make_unique<id>(t[i].pos, t[i].raw, t[i].kind == token_kind::op);
+}
+
+auto boolc::parse(parser &, const vector<token> &t, size_t &i) -> uniq<boolc> {
+  return make_unique<boolc>(t[i].pos, t[i].raw.to_bool());
 }
 
 auto inum::parse(parser&, const vector<token> &t, size_t &i) -> uniq<inum> {

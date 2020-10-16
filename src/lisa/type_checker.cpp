@@ -44,6 +44,10 @@ auto id::type(type_checker &t) -> type_t* {
   return t.var_table[this->name];
 }
 
+auto boolc::type(type_checker &t) -> type_t* {
+  return &bool_;
+}
+
 auto inum::type(type_checker &t) -> type_t* {
   return &i32;
 }

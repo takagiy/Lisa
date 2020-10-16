@@ -32,6 +32,9 @@ using ST::string;
 
 namespace lisa {
 auto gen_fn_decl(compiler& c, const string& name, const fn_type& type) {
+  if (auto p = prim_fn::find(name); p) {
+    return;
+  }
   vector<Type *> args_t;
   transform(type.args.cbegin(), type.args.cend(), back_inserter(args_t),
       [&](auto &&t) { return t->raw(c.context); });
@@ -57,6 +60,10 @@ auto compiler::compile(const node &ast) -> void {
 
 auto id::gen(compiler &c) const -> Value* {
   return c.var_table[this->name].value;
+}
+
+auto boolc::gen(compiler &c) const -> Value* {
+  return c.builder.getInt1(this->value);
 }
 
 auto inum::gen(compiler &c) const -> Value* {
